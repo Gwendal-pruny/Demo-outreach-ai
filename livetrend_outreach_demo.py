@@ -8,13 +8,15 @@ from dotenv import load_dotenv
 # External clients
 try:
     from openai import OpenAI  # openai>=1.0 SDK
-except Exception:
+except ImportError:
     OpenAI = None  # type: ignore
 
 try:
     from exa_py import Exa  # exa-py package
-except Exception:
+except ImportError:
     Exa = None  # type: ignore
+
+INSTALL_HELP = "Installez les dépendances avec `pip install -r requirements.txt`."
 
 
 EMAIL_STYLES: Dict[str, str] = {
@@ -52,9 +54,9 @@ DEFAULT_OFFERING_DESC = (
 class Clients:
     def __init__(self, openai_key: str, exa_key: str) -> None:
         if OpenAI is None:
-            raise RuntimeError("openai SDK not installed. Please install requirements.txt")
+            raise RuntimeError(f"OpenAI n’est pas installé. {INSTALL_HELP}")
         if Exa is None:
-            raise RuntimeError("exa-py SDK not installed. Please install requirements.txt")
+            raise RuntimeError(f"Exa-py n’est pas installé. {INSTALL_HELP}")
         self.openai = OpenAI(api_key=openai_key)
         self.exa = Exa(exa_key)
 

@@ -1,20 +1,28 @@
 from typing import Any, List
 
 try:
-	from agno.agent import Agent
-	from agno.memory.v2 import Memory
-	from agno.models.openai import OpenAIChat
-	from agno.tools.exa import ExaTools
-except Exception:
-	Agent = None  # type: ignore
-	Memory = None  # type: ignore
-	OpenAIChat = None  # type: ignore
-	ExaTools = None  # type: ignore
+        from agno.agent import Agent
+        from agno.memory.v2 import Memory
+        from agno.models.openai import OpenAIChat
+        from agno.tools.exa import ExaTools
+except ImportError:
+        Agent = None  # type: ignore
+        Memory = None  # type: ignore
+        OpenAIChat = None  # type: ignore
+        ExaTools = None  # type: ignore
+
+INSTALL_HELP = "Installez les dépendances avec `pip install -r requirements.txt`."
+
+
+def _ensure_agno_installed(require_exa: bool = True) -> None:
+        if Agent is None or Memory is None or OpenAIChat is None or (require_exa and ExaTools is None):
+                raise RuntimeError(f"Agno n’est pas installé. {INSTALL_HELP}")
 
 
 def create_company_finder_agent(model_id: str, industries: List[str], regions: List[str], exclude_domains: List[str]) -> Any:
-	exa_tools = ExaTools(category="company")
-	memory = Memory()
+        _ensure_agno_installed()
+        exa_tools = ExaTools(category="company")
+        memory = Memory()
 	filters_instruction = (
 		f"Industries: {', '.join(industries) if industries else 'any'}. "
 		f"Regions: {', '.join(regions) if regions else 'any'}. "
@@ -36,8 +44,9 @@ def create_company_finder_agent(model_id: str, industries: List[str], regions: L
 
 
 def create_contact_finder_agent(model_id: str) -> Any:
-	exa_tools = ExaTools()
-	memory = Memory()
+        _ensure_agno_installed()
+        exa_tools = ExaTools()
+        memory = Memory()
 	return Agent(
 		model=OpenAIChat(id=model_id),
 		tools=[exa_tools],
@@ -52,8 +61,9 @@ def create_contact_finder_agent(model_id: str) -> Any:
 
 
 def create_research_agent(model_id: str) -> Any:
-	exa_tools = ExaTools()
-	memory = Memory()
+        _ensure_agno_installed()
+        exa_tools = ExaTools()
+        memory = Memory()
 	return Agent(
 		model=OpenAIChat(id=model_id),
 		tools=[exa_tools],
@@ -78,7 +88,8 @@ def get_email_style_instruction(style_key: str) -> str:
 
 
 def create_email_writer_agent(model_id: str, style_key: str = "Professional", followups: int = 0) -> Any:
-	memory = Memory()
+        _ensure_agno_installed(require_exa=False)
+        memory = Memory()
 	style_instruction = get_email_style_instruction(style_key)
 	followup_instruction = (
 		f"Also generate {followups} numbered follow-up emails (1-2 lines each) with JSON key 'followups' as a list."
@@ -101,7 +112,8 @@ def create_email_writer_agent(model_id: str, style_key: str = "Professional", fo
 
 
 def create_quality_check_agent(model_id: str) -> Any:
-	memory = Memory()
+        _ensure_agno_installed(require_exa=False)
+        memory = Memory()
 	return Agent(
 		model=OpenAIChat(id=model_id),
 		tools=[],
